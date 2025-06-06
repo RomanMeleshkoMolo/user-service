@@ -1,5 +1,67 @@
-<div>
-     <h1>Здравствуйте!</h1>
-     <p>Ваш код подтверждения: <strong><%= confirmationCode %></strong></p>
-     <p>Это тестовое письмо</p>
-   </div>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Подтверждение email</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0496FF;
+      margin: 0;
+      padding: 0;
+    }
+    .logo {
+      width: 100px;
+      height: 100px;
+    }
+    .container {
+      margin: 0 auto;
+      background-color: #0496FF;
+      padding: 20px;
+      text-align: center;
+    }
+    .header {
+      border-radius: 8px;
+    }
+    .content {
+      background-color: #e5e7e8;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .code {
+      font-size: 32px;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #fff;
+    }
+    .social-links img {
+      width: 24px;
+      margin: 0 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+     <div class="header">
+        <img class="logo" src="https://res.cloudinary.com/dchglxm4a/image/upload/v1749233711/molo_rxxw6s.png" alt="Logo">
+     </div>
+     <div class="content">
+        <h3>Проверочный код</h3>
+        <p>Этот код являеться подтверждением Вашего аккаунта в Molo.Просто введите его в приложение</p>
+
+        <div class="code"><%= confirmationCode %></div>
+
+        <p>Код активный только один раз</p>
+        <p>Это сообщение для вас. Пожалуйста, не делитесь им с кем-либо.</p>
+     </div>
+     <div class="footer">
+       <p>© 2025 Molo. Все права защищены.</p>
+     </div>
+  </div>
+</body>
+</html>

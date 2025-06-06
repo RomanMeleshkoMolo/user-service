@@ -3,17 +3,11 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const transporter = require('../config/nodemailerConfig');
 
-// Connect Template
-const ejs = require('ejs');
-const fs = require('fs');
-const path = require('path');
-
+// Connect render Template
+const renderEmailTemplate = require('./templateRenderer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// app.use(cors());
-// app.use(bodyParser.json());
 
 app.use(cors({ origin: '*' }));
 app.use(bodyParser.json());
@@ -30,17 +24,11 @@ app.post('/send-confirmation', (req, res) => {
 
   const confirmationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-  // Connect Template
-  const templatePath = path.join(__dirname, '../Templates/emailTemplate.ejs');
-  const template = fs.readFileSync(templatePath, 'utf-8');
-  const html = ejs.render(template, { confirmationCode });
-
-
   const mailOptions = {
     from: '"Molo" <molo.app1@gmail.com>',
     to: email,
     subject: `Твой код: ${confirmationCode}`,
-    html: html,
+    html: renderEmailTemplate(confirmationCode)
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
