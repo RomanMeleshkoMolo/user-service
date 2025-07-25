@@ -7,6 +7,7 @@ const registerPhone = require('../routes/registerPhone');
 const registrationEmail = require('../routes/registrationEmail');
 const registrationTelegram = require('../routes/registrationTelegram');
 const setConfirmation = require('../routes/setConfirmation');
+const updateUserName = require('../routes/updateUserName');
 const twimlRoutes = require('../routes/twiml');
 
 // Connect Telegram bot
@@ -23,6 +24,7 @@ app.use(registerPhone);
 app.use(registrationEmail);
 app.use(registrationTelegram);
 app.use(setConfirmation);
+app.use(updateUserName);
 app.use('/', twimlRoutes);
 
 app.listen(PORT, () => {
