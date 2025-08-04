@@ -4,14 +4,14 @@ const TelegramBot = require('node-telegram-bot-api');
 // Укажите ваш токен, полученный от BotFather
 const token = process.env.TOKEN_TELEGRAM;
 
-const backendUrl = 'http://localhost:3000/api/setConfirmation' ||
-                   'http://10.0.2.2:3000/api/setConfirmation';
+const backendUrl = 'http://localhost:3000/api/setDataFromTelegram' ||
+                   'http://10.0.2.2:3000/api/setDataFromTelegram';
 
 // Создайте экземпляр бота
 const bot = new TelegramBot(token, { polling: true });
 
 // Обработчик команды /start
-bot.onText(/\/start/, (msg) => {
+bot.onText(/\/start/, async (msg) => {
 
   const confirmationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
