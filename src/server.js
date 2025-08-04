@@ -3,11 +3,11 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 // Connect routes
-const registerPhone = require('../routes/registerPhone');
-const registrationEmail = require('../routes/registrationEmail');
-const registrationTelegram = require('../routes/registrationTelegram');
-const setConfirmation = require('../routes/setConfirmation');
-const updateUserName = require('../routes/updateUserName');
+const userRegisterPhone = require('../routes/userRegisterPhone');
+const userRegisterEmail = require('../routes/userRegisterEmail');
+const userRegisterTelegram = require('../routes/userRegisterTelegram');
+const setDataFromTelegram = require('../routes/setDataFromTelegram');
+const userNameUpdate = require('../routes/userNameUpdate');
 const twimlRoutes = require('../routes/twiml');
 
 // Connect Telegram bot
@@ -20,11 +20,11 @@ app.use(cors({ origin: '*' }));
 app.use(bodyParser.json());
 
 // Use routes
-app.use(registerPhone);
-app.use(registrationEmail);
-app.use(registrationTelegram);
-app.use(setConfirmation);
-app.use(updateUserName);
+app.use(userRegisterPhone);
+app.use(userRegisterEmail);
+app.use(userRegisterTelegram);
+app.use(setDataFromTelegram);
+app.use(userNameUpdate);
 app.use('/', twimlRoutes);
 
 app.listen(PORT, () => {
