@@ -1,25 +1,42 @@
 const User = require('../models/userModel');
 
-async function createUser(chatId, confirmationCode) {
+// Check of the data on type
+function isNonEmptyObject( data ) {
+  return typeof data === 'object' && data !== null && !Array.isArray(data) && Object.keys(data).length > 0;
+}
+
+async function createUser( data ) {
+
+   if ( !isNonEmptyObject( data ) ) {
+    console.log("Параметр data пустой");
+    return;
+  }
+
   const userCount = await User.countDocuments();
   const userId = userCount + 1;
 
   const newUser = await User.create({
     userId: userId,
-    chatId: chatId,
-    confirmationCode: confirmationCode
+    chatId: data.chatId,
+    confirmationCode: data.confirmationCode,
+    email: data.email,
   });
-
 
   console.log("Новый пользователь создан!:", newUser);
 
   return newUser;
 }
 
-async function updateUserConfirmationCode(chatId, confirmationCode) {
+async function updateUserConfirmationCode( data ) {
+
+  if ( !isNonEmptyObject(data) ) {
+    console.log("Параметр data пустой");
+    return;
+  }
+
   const updatedUser = await User.findOneAndUpdate(
-    { chatId },
-    { $set: { confirmationCode: confirmationCode } },
+    { chatId: data.chatId },
+    { $set: { confirmationCode: data.confirmationCode } },
     { new: true }
   );
 
@@ -28,10 +45,18 @@ async function updateUserConfirmationCode(chatId, confirmationCode) {
   return updatedUser;
 }
 
-async function updateUserName(userId, name) {
+async function updateUser( data ) {
+
+  if ( !isNonEmptyObject(data) ) {
+    console.log("Параметр data пустой");
+    return;
+  }
+
   const updatedUser = await User.findOneAndUpdate(
-    { userId: userId },
-    { $set: { name: name } },
+    { userId: data.userId, },
+    { $set: { name: data.name,
+                     email: data.email,
+                    } },
     { new: true }
   );
 
@@ -39,7 +64,7 @@ async function updateUserName(userId, name) {
     throw new Error('User not found');
   }
 
-  console.log('Имя пользователя обновлено:', updatedUser);
+  console.log('Пользователя обновлено:', updatedUser);
 
   return updatedUser;
 }
@@ -47,5 +72,5 @@ async function updateUserName(userId, name) {
 module.exports = {
   createUser,
   updateUserConfirmationCode,
-  updateUserName
+  updateUser,
 };

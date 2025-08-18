@@ -5,18 +5,18 @@ const { createUser, updateUserConfirmationCode } = require('../services/userServ
 
 
 router.post('/api/setDataFromTelegram', async (req, res) => {
-  const { chatId, confirmationCode } = req.body;
+  const data = { chatId, confirmationCode } = req.body;
 
   try {
     const existingUser = await User.findOne({ chatId });
 
     if ( !existingUser ) {
 
-        const newUser = await createUser(chatId, confirmationCode);
+        await createUser( data );
 
     } else {
 
-        const updatedUser = await updateUserConfirmationCode(chatId, confirmationCode);
+        await updateUserConfirmationCode( data );
 
     }
 
@@ -28,4 +28,3 @@ router.post('/api/setDataFromTelegram', async (req, res) => {
 });
 
 module.exports = router;
-
