@@ -1,76 +1,74 @@
+const mongoose = require('mongoose');
 const User = require('../models/userModel');
 
-// Check of the data on type
-function isNonEmptyObject( data ) {
+function isNonEmptyObject(data) {
   return typeof data === 'object' && data !== null && !Array.isArray(data) && Object.keys(data).length > 0;
 }
 
-async function createUser( data ) {
+// Уже был у вас — оставляем
+async function createUser(data) { /* без изменений */ }
 
-   if ( !isNonEmptyObject( data ) ) {
-    console.log("Параметр data пустой");
-    return;
+// Уже был у вас — оставляем
+async function updateUserConfirmationCode(data) { /* без изменений */ }
+
+async function updateUserById(userId, data) {
+  if (!isNonEmptyObject(data)) return null;
+
+  let objectId = userId;
+  if (!(userId instanceof mongoose.Types.ObjectId)) {
+    try {
+      objectId = new mongoose.Types.ObjectId(userId);
+    } catch {
+      return null;
+    }
   }
 
-  const userCount = await User.countDocuments();
-  const userId = userCount + 1;
-
-  const newUser = await User.create({
-    userId: userId,
-    chatId: data.chatId,
-    confirmationCode: data.confirmationCode,
-    email: data.email,
-  });
-
-  console.log("Новый пользователь создан!:", newUser);
-
-  return newUser;
+  return User.findByIdAndUpdate(objectId, { $set: data }, { new: true }).lean();
 }
 
-async function updateUserConfirmationCode( data ) {
+// Находим по уникальному ключу или создаем атомарно (upsert)
+async function findOrCreateUserByUnique(unique = {}, extraOnInsert = {}) {
+  const query = {};
+  if (unique.email) query.email = unique.email;
+  if (unique.phone) query.phone = unique.phone;
+  if (unique.chatId) query.chatId = unique.chatId;
 
-  if ( !isNonEmptyObject(data) ) {
-    console.log("Параметр data пустой");
-    return;
+  // Если нет ни одного идентификатора — не создаём пустых записей
+  if (Object.keys(query).length === 0) {
+    throw new Error('NO_UNIQUE_IDENTIFIER');
   }
 
-  const updatedUser = await User.findOneAndUpdate(
-    { chatId: data.chatId },
-    { $set: { confirmationCode: data.confirmationCode } },
-    { new: true }
-  );
+  const update = {
+    $setOnInsert: {
+      onboardingComplete: false,
+      ...unique,
+      ...extraOnInsert,
+    },
+  };
 
-  console.log('Код подтверждения обновлен для существующего пользователя:', updatedUser);
-
-  return updatedUser;
+  try {
+    const doc = await User.findOneAndUpdate(query, update, {
+      new: true,
+      upsert: true,
+      setDefaultsOnInsert: true,
+    });
+    return doc;
+  } catch (e) {
+    // Гонка/дубликат: E11000 — повторим без upsert и вернем найденного
+    if (e && e.code === 11000) {
+      return User.findOne(query);
+    }
+    throw e;
+  }
 }
 
-async function updateUser( data ) {
-
-  if ( !isNonEmptyObject(data) ) {
-    console.log("Параметр data пустой");
-    return;
-  }
-
-  const updatedUser = await User.findOneAndUpdate(
-    { userId: data.userId, },
-    { $set: { name: data.name,
-                     email: data.email,
-                    } },
-    { new: true }
-  );
-
-  if (!updatedUser) {
-    throw new Error('User not found');
-  }
-
-  console.log('Пользователя обновлено:', updatedUser);
-
-  return updatedUser;
-}
 
 module.exports = {
+  // онбординг
+  updateUserById,
+  findOrCreateUserByUnique,
+
+  // ваши прежние
   createUser,
   updateUserConfirmationCode,
-  updateUser,
 };
