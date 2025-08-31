@@ -5,12 +5,6 @@ function isNonEmptyObject(data) {
   return typeof data === 'object' && data !== null && !Array.isArray(data) && Object.keys(data).length > 0;
 }
 
-// Уже был у вас — оставляем
-async function createUser(data) { /* без изменений */ }
-
-// Уже был у вас — оставляем
-async function updateUserConfirmationCode(data) { /* без изменений */ }
-
 async function updateUserById(userId, data) {
   if (!isNonEmptyObject(data)) return null;
 
@@ -67,8 +61,4 @@ module.exports = {
   // онбординг
   updateUserById,
   findOrCreateUserByUnique,
-
-  // ваши прежние
-  createUser,
-  updateUserConfirmationCode,
 };
