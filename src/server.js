@@ -10,6 +10,7 @@ const setDataFromTelegram = require('../routes/setDataFromTelegram');
 const userNameUpdate = require('../routes/userNameUpdate');
 const twimlRoutes = require('../routes/twiml');
 const userInterestTitle = require('../routes/userInterestTitle');
+const userRegisterBirthday = require('../routes/userRegisterBirthday');
 
 // Connect Telegram bot
 const telegram = require('../telegram/telegramBot');
@@ -28,6 +29,7 @@ app.use(setDataFromTelegram);
 app.use(userNameUpdate);
 app.use('/', twimlRoutes);
 app.use(userInterestTitle);
+app.use(userRegisterBirthday);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
