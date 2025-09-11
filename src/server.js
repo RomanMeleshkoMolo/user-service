@@ -11,6 +11,7 @@ const userNameUpdate = require('../routes/userNameUpdate');
 const twimlRoutes = require('../routes/twiml');
 const userInterestTitle = require('../routes/userInterestTitle');
 const userRegisterBirthday = require('../routes/userRegisterBirthday');
+const userRegisterGender = require('../routes/userRegisterGender');
 
 // Connect Telegram bot
 const telegram = require('../telegram/telegramBot');
@@ -30,6 +31,7 @@ app.use(userNameUpdate);
 app.use('/', twimlRoutes);
 app.use(userInterestTitle);
 app.use(userRegisterBirthday);
+app.use(userRegisterGender);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
