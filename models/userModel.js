@@ -5,7 +5,9 @@ const userSchema = new mongoose.Schema({
   confirmationCode: { type: String, index: true, unique: true, sparse: true },
   name: { type: String, index: true, unique: true, sparse: true },
   email: { type: String, index: true, unique: true, sparse: true },
-  interests: { type: [String], default: [] }
+  interests: { type: [String], default: [] },
+  age: { type: Number },
+  userBirthday: { type: String },
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
