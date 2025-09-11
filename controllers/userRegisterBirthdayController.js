@@ -66,7 +66,7 @@ exports.saveUserBirthday = async (req, res) => {
     //   если нужно поле — храните число.
     // Если оставляете типы как String — преобразуйте к строкам.
     const update = {
-      userBirthday: dateObj, // если поле Date; если String — используйте birthDate
+      userBirthday: birthDate, // если поле Date; если String — используйте birthDate
       age: age,              // если Number; если String — String(age)
     };
 

@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   interests: { type: [String], default: [] },
   age: { type: Number },
   userBirthday: { type: String },
+  gender: { type: String, enum: ['male', 'female', 'other'],}
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
