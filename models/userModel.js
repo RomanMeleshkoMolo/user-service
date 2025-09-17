@@ -9,7 +9,8 @@ const userSchema = new mongoose.Schema({
   age: { type: Number },
   userBirthday: { type: String },
   gender: { type: String, enum: ['male', 'female', 'other'] },
-  wishUser: { type: String, enum: ['male', 'female', 'all'] }
+  wishUser: { type: String, enum: ['male', 'female', 'all'] },
+  userPhoto: { type: [String], default: []}
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
