@@ -13,6 +13,7 @@ const userInterestTitle = require('../routes/userInterestTitle');
 const userRegisterBirthday = require('../routes/userRegisterBirthday');
 const userRegisterGender = require('../routes/userRegisterGender');
 const userRegisterWish = require('../routes/userRegisterWish');
+const userRegisterPhoto = require('../routes/userRegisterPhoto');
 
 // Connect Telegram bot
 const telegram = require('../telegram/telegramBot');
@@ -34,6 +35,7 @@ app.use(userInterestTitle);
 app.use(userRegisterBirthday);
 app.use(userRegisterGender);
 app.use(userRegisterWish);
+app.use(userRegisterPhoto);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
