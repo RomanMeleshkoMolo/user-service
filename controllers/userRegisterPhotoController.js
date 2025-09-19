@@ -1,38 +1,9 @@
-// controllers/userRegisterPhotoController.js
-const path = require('path');
-const fs = require('fs/promises');
 const mongoose = require('mongoose');
 const User = require('../models/userModel');
 
 const MAX_PHOTOS_TOTAL = 1000;
-const ALLOWED_MIME = [
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
-  'image/webp',
-  'image/heic',
-  'image/heif'
-];
-
-// Безопасное удаление файла
-async function safeUnlink(filePath) {
-  if (!filePath) return;
-  try {
-    await fs.unlink(filePath);
-  } catch {
-    // игнорируем
-  }
-}
-
-// Построение публичного URL.
-// Ожидается, что файлы лежат в uploads/user-photos/:userId/:filename
-function buildPublicUrl(req, userId, filename) {
-  const base = `${req.protocol}://${req.get('host')}`;
-  return `${base}/uploads/user-photos/${userId}/${filename}`;
-}
 
 exports.saveUserPhoto = async (req, res) => {
-
   // Определяем userId из контекста авторизации
   const userId =
     req.user?._id ||
@@ -41,80 +12,58 @@ exports.saveUserPhoto = async (req, res) => {
     req.regUserId ||
     req.userId;
 
-  // Соберём файлы из Multer: поддержим и один файл, и массив
-  const files = Array.isArray(req.files)
-    ? req.files
-    : req.file
-      ? [req.file]
-      : [];
+  // Новый поток: клиент отправляет метаданные после загрузки в S3
+  // Ожидаем: { photos: [{ key, filename, mimeType, size }] }
+  const { photos } = req.body || {};
 
   try {
     if (!userId || !mongoose.Types.ObjectId.isValid(String(userId))) {
-      // если файлы уже легли на диск — удалим
-      await Promise.all(files.map(f => safeUnlink(f.path)));
       return res.status(401).json({ message: 'Unauthorized: user id not found in request context' });
     }
 
-    if (!files.length) {
-      return res.status(400).json({ message: 'Не переданы файлы. Используйте поле "photos" (или "photo") в multipart/form-data.' });
+    if (!Array.isArray(photos) || photos.length === 0) {
+      return res.status(400).json({ message: 'Не переданы файлы. Ожидается массив "photos"' });
     }
 
-    // Валидация типов
-    const badType = files.find(f => !ALLOWED_MIME.includes(f.mimetype));
-    if (badType) {
-      await Promise.all(files.map(f => safeUnlink(f.path)));
-      return res.status(400).json({ message: `Недопустимый тип файла: ${badType.originalname || badType.filename || 'unknown'}` });
-    }
+    // Валидация типов по mimeType если нужно
+    // Доступ к ALLOWED_MIME можно вернуть из константы, но мы здесь храним только key/filename/mimeType/size
 
-    // Найдем пользователя, чтобы знать текущее количество фото
+    // Ограничение по количеству фото у пользователя
+    // Предполагаем, что в БД у User есть поле userPhoto: [String] (URL или ключи)
     const user = await User.findById(userId).select('_id userPhoto');
     if (!user) {
-      await Promise.all(files.map(f => safeUnlink(f.path)));
       return res.status(404).json({ message: 'User not found' });
     }
 
     const currentCount = Array.isArray(user.userPhoto) ? user.userPhoto.length : 0;
+    // Разрешаем добавить максимум MAX_PHOTOS_TOTAL
     const available = Math.max(0, MAX_PHOTOS_TOTAL - currentCount);
-
-    if (files.length > available) {
-      await Promise.all(files.map(f => safeUnlink(f.path)));
+    if (photos.length > available) {
       return res.status(400).json({
-        message: `Можно иметь максимум2 ${MAX_PHOTOS_TOTAL} фото. Сейчас: ${currentCount}. Можно добавить еще: ${available}.`
+        message: `Можно иметь максимум ${MAX_PHOTOS_TOTAL} фото. Сейчас: ${currentCount}. Можно добавить еще: ${available}.`
       });
     }
 
-    // Сформируем URL'ы для сохранения в БД
-    const urls = files.map(f => {
-      // Если ваше размещение отличается, поменяйте логику здесь
-      return buildPublicUrl(req, userId, f.filename);
-    });
+    // Формируем строки URL/ключи для сохранения в БД
+    // Вы можете хранить или ключи S3, или публичные URL. Здесь сохраняем ключи (key) как URL-образ.
+    // Если хотите сохранить публичные URL, можно построить их здесь. Ниже сохраняем ключи в виде путей S3.
+    const urls = photos.map(p => p.key || p.filename);
 
     // Обновим пользователя: добавим новые URL'ы в массив userPhoto
     const updated = await User.findByIdAndUpdate(
       userId,
       { $push: { userPhoto: { $each: urls } } },
       { new: true, runValidators: true }
-    ).select('-__v'); // по желанию, исключите поля
+    ).select('-__v');
 
     if (!updated) {
-      // крайне маловероятно, но на всякий случай удалим файлы
-      await Promise.all(files.map(f => safeUnlink(f.path)));
       return res.status(404).json({ message: 'User not found' });
     }
 
     return res.json({ ok: true, user: updated });
   } catch (error) {
-    // В случае любой ошибки — удалим уже загруженные файлы
-    await Promise.all(files.map(f => safeUnlink(f.path)));
-
-    if (error?.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ message: 'Файл превышает максимально допустимый размер (5 МБ)' });
-    }
-    if (error?.code === 11000) {
-      return res.status(409).json({ message: 'Duplicate key error' });
-    }
-
     console.error('saveUserPhoto error:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+

@@ -2,10 +2,12 @@ const express = require('express');
 const router = express.Router();
 
 const { authOnboardingRequired } = require('../middlewares/authOnboarding');
-const { uploadPhotos } = require('../middlewares/multerUpload');
+
+// Уже не нужно так как отправляем фото в хранилище S3
+// const { uploadPhotos } = require('../middlewares/multerUpload');
 
 const { saveUserPhoto } = require('../controllers/userRegisterPhotoController');
 
-router.post('/onboarding/photos', authOnboardingRequired, uploadPhotos.array('photos', 30), saveUserPhoto );
+router.post('/onboarding/photos', authOnboardingRequired, saveUserPhoto );
 
 module.exports = router;
