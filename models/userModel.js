@@ -11,7 +11,8 @@ const userSchema = new mongoose.Schema({
   gender: { type: String, enum: ['male', 'female', 'other'] },
   wishUser: { type: String, enum: ['male', 'female', 'all'] },
   userPhoto: [{ type: String }],
-  userLocation: { type: String, index: true }
+  userLocation: { type: String, index: true },
+  userSex: { type: String, enum: ['heterosexual', 'gay', 'lesbian', 'bisexual', 'asexual'] }
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);

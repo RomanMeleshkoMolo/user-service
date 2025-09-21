@@ -16,6 +16,7 @@ const userRegisterWish = require('../routes/userRegisterWish');
 const userRegisterPhoto = require('../routes/userRegisterPhoto');
 const storageRoutes = require('../routes/storage');
 const userRegisterLocation = require('../routes/userRegisterLocation');
+const userRegisterSex = require('../routes/userRegisterSex');
 
 // Connect Telegram bot
 const telegram = require('../telegram/telegramBot');
@@ -40,6 +41,7 @@ app.use(userRegisterWish);
 app.use(userRegisterPhoto);
 app.use(storageRoutes);
 app.use(userRegisterLocation);
+app.use(userRegisterSex);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
