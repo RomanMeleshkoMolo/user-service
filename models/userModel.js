@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, index: true, unique: true, sparse: true },
   email: { type: String, index: true, unique: true, sparse: true },
   interests: { type: [String], default: [] },
+  googleId: { type: String, index: true, unique: true, sparse: true },
   age: { type: Number },
   userBirthday: { type: String },
   gender: { type: String, enum: ['male', 'female', 'other'] },
