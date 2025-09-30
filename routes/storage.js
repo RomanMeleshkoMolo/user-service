@@ -63,8 +63,6 @@ router.get('/storage/presigned-upload', async (req, res) => {
   try {
     const { filename, contentType } = req.query;
 
-    console.log("here s3");
-
     if (!filename || !contentType) {
       return res.status(400).json({ message: 'filename и contentType обязательны' });
     }
@@ -77,8 +75,6 @@ router.get('/storage/presigned-upload', async (req, res) => {
       ContentType: contentType,
       // ACL: 'private' // по умолчанию и так private; можно не указывать
     });
-
-    console.log("down s3");
 
     const url = await getSignedUrl(s3, command, { expiresIn: 60 }); // 60 секунд
 
