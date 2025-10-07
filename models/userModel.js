@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
   confirmationCode: { type: String, index: true, unique: true, sparse: true },
   name: { type: String, index: true, unique: true, sparse: true },
   email: { type: String, index: true, unique: true, sparse: true },
-  interests: { type: [String], default: [] },
+  interests: [{ title: { type: String, required: true }, icon: { type: String, default: '' } }],
   googleId: { type: String, index: true, unique: true, sparse: true },
   age: { type: Number },
   userBirthday: { type: String },
