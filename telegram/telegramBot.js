@@ -4,8 +4,11 @@ const TelegramBot = require('node-telegram-bot-api');
 // Укажите ваш токен, полученный от BotFather
 const token = process.env.TOKEN_TELEGRAM;
 
-const backendUrl = 'http://localhost:3000/api/setDataFromTelegram' ||
-                   'http://10.0.2.2:3000/api/setDataFromTelegram';
+const url_android = process.env.URL_ANDROID;
+const url_ios =  process.env.URL_IOS;
+
+const backendUrl = `${ url_ios }/api/setDataFromTelegram` ||
+                   `${ url_android }/api/setDataFromTelegram`;
 
 // Создайте экземпляр бота
 const bot = new TelegramBot(token, { polling: true });

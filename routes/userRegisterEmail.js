@@ -8,6 +8,6 @@ const { authOnboardingOptional } = require('../middlewares/authOnboarding');
 
 const { registerEmail } = require('../controllers/userRegisterEmailController');
 
-router.post('/register-email', authOnboardingOptional, registerEmail );
+router.post('/register-email', registerEmail );
 
 module.exports = router;

@@ -29,24 +29,9 @@ const saveUserInterest = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Нормализация поля interests к массиву
-    if (!Array.isArray(user.interests)) {
-      user.interests = [];
-    }
-
-    // Если раньше хранились строки — конвертируем первый элемент в объект
-    // и игнорируем остальные (т.к. теперь допускается только один объект)
-    if (user.interests.length > 0) {
-      const first = user.interests;
-      const normalizedFirst =
-        typeof first === 'string' ? { title: first, icon: '' } : first;
-
-      // Обновляем только первый объект
-      user.interests = [{ title, icon }];
-    } else {
-      // Если ничего не было — устанавливаем первый и единственный элемент
-      user.interests = [{ title, icon }];
-    }
+    // Нормализация поля interests к объекту
+    // Теперь interests это одиночный объект { title, icon }
+    user.interests = { title, icon };
 
     await user.save();
 
