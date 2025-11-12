@@ -16,7 +16,8 @@ exports.saveUserGender = async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized: user id not found in request context' });
     }
 
-    const { gender } = req.body;
+     const payload = req.body && req.body.payload ? req.body.payload : {};
+    const { gender } = payload;
 
     if (!gender || typeof gender !== 'string') {
       return res.status(400).json({ message: 'Поле gender обязательно' });

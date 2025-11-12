@@ -3,13 +3,15 @@ const { findOrCreateUserByUnique, updateUserById } = require('../services/userSe
 
 exports.startOnboarding = async (req, res) => {
   try {
-    const { email, phone, chatId } = req.body || {};
+    const { email } = req.body || {};
 
-    if (!email && !phone && !chatId) {
+    console.log( "email:" + email )
+
+    if ( !email ) {
       return res.status(400).json({ message: 'Identifier required (email, phone or chatId)' });
     }
 
-    const user = await findOrCreateUserByUnique({ email, phone, chatId });
+    const user = await findOrCreateUserByUnique({ email });
     const userId = user._id?.toString?.() || user.id;
 
     const regToken = jwt.sign(
@@ -38,6 +40,10 @@ exports.updateName = async (req, res) => {
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
     const { name } = req.body;
+
+    console.log("====name=====");
+    console.log( name );
+
     const normalizedName = (name || '').trim();
     if (normalizedName.length < 2 || normalizedName.length > 50) {
       return res.status(400).json({ message: 'Name length must be between 2 and 50 characters' });

@@ -5,6 +5,6 @@ const { authOnboardingRequired } = require('../middlewares/authOnboarding');
 
 const { saveUserSex } = require('../controllers/userRegisterSexController');
 
-router.post('/onboarding/my-orientation', authOnboardingRequired, saveUserSex );
+router.post('/onboarding/orientation', authOnboardingRequired, saveUserSex );
 
 module.exports = router;

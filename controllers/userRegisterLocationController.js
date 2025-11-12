@@ -72,7 +72,8 @@ exports.saveUserLocation = async (req, res) => {
         .json({ message: 'Unauthorized: user id not found in request context' });
     }
 
-    const { location } = req.body; // ожидаем { location: 'Город/посёлок' }
+    const payload = req.body && req.body.payload ? req.body.payload : {};
+    const { location } = payload; // ожидаем { location: 'Город/посёлок' }
 
     const { valid, value, reason } = validateAndCanonicalizeLocation(location);
     if (!valid) {
