@@ -46,7 +46,8 @@ exports.saveUserBirthday = async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized: user id not found in request context' });
     }
 
-    const { birthDate /* 'YYYY-MM-DD' */, birthDateParts } = req.body;
+    const payload = req.body && req.body.payload ? req.body.payload : {};
+    const { birthDate, birthDateParts } = payload;
 
     // Валидируем и парсим дату
     const dateObj = parseYMD(birthDate);

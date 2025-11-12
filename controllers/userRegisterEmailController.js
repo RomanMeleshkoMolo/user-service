@@ -3,15 +3,15 @@ const renderEmailTemplate = require('../src/templateRenderer');
 const User = require('../models/userModel');
 
 const registerEmail = async (req, res) => {
-  try {
+ try {
     const { email } = req.body;
 
- if (!email || typeof email !== 'string') {
-   return res.status(400).json({ message: 'Email is required' });
- }
+  if (!email || typeof email !== 'string') {
+    return res.status(400).json({ message: 'Email is required' });
+  }
 
-const normalizedEmail = email.toLowerCase().trim();
-const confirmationCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const normalizedEmail = email.toLowerCase().trim();
+  const confirmationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
 // Если пользователь авторизован — обновляем его email
 if (req.user?.id) {

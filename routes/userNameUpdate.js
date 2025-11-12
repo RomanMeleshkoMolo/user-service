@@ -6,7 +6,7 @@ const { authOnboardingOptional, authOnboardingRequired } = require('../middlewar
 router.post('/onboarding/start', authOnboardingOptional, startOnboarding);
 
 // На следующих шагах токен обязателен
-router.put('/onboarding/name', authOnboardingRequired, updateName);
+router.post('/onboarding/name', authOnboardingRequired, updateName);
 // router.put('/onboarding/interests', authOnboardingRequired, updateInterests);
 // router.post('/onboarding/complete', authOnboardingRequired, completeOnboarding);
 
