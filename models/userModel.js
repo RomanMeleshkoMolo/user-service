@@ -33,15 +33,27 @@ const userSchema = new mongoose.Schema({
 
   // interests — одиночный объект, но опциональный
   interests: {
-    type: InterestSchema,
+    type: new mongoose.Schema(
+      {
+        title: { type: String, trim: true },
+        icon: { type: String, default: '' },
+      },
+      { _id: false }
+    ),
     required: false,
-    default: undefined, // важно: чтобы не создавался пустой объект
+    default: undefined,
   },
 
   googleId: { type: String, index: true, unique: true, sparse: true },
   age: { type: Number },
   userBirthday: { type: String },
-  gender: { type: String, enum: ['male', 'female', 'other'] },
+
+  // Новая структура для пола
+  gender: {
+    id: { type: String, enum: ['male', 'female', 'other'], required: false },
+    title: { type: String, trim: true }, // например: 'Мужской', 'Женский', 'Другие'
+  },
+
   wishUser: { type: String, enum: ['male', 'female', 'all'] },
   userPhoto: { type: [UserPhotoSchema], default: [] },
   userLocation: { type: String, index: true },
@@ -50,4 +62,3 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 module.exports = User;
-
