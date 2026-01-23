@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const { findOrCreateUserByUnique, updateUserById } = require('../services/userService');
+const User = require('../models/userModel');
 
 const GOOGLE_CLIENT_ID = process.env.WEB_CLIENT_ID; // тот же, что на клиенте
 const jwtSecret = process.env.JWT_SECRET;
@@ -16,7 +17,10 @@ const oAuthClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 exports.userRegisterGoogle = async (req, res) => {
   try {
-    const { idToken } = req.body || {};
+    const { idToken, deviceId } = req.body || {};
+
+    console.log('userRegisterGoogle: получены данные', { idToken: !!idToken, deviceId });
+
     if (!idToken) {
       return res.status(400).json({ message: 'idToken is required' });
     }
@@ -53,9 +57,37 @@ exports.userRegisterGoogle = async (req, res) => {
       return res.status(400).json({ message: 'Google email is missing or not verified' });
     }
 
-    // Находим/создаем пользователя по email (и/или googleId)
-    // findOrCreateUserByUnique — ваша функция. Передадим оба уникальных признака.
-    const user = await findOrCreateUserByUnique({ email, googleId });
+    let user = null;
+
+    // ШАГ 1: Ищем по deviceId (ГЛАВНЫЙ идентификатор для связки аккаунтов)
+    if (deviceId) {
+      user = await User.findOne({ deviceId });
+      if (user) {
+        console.log('userRegisterGoogle: найден пользователь по deviceId', user._id);
+
+        // Проверяем, не занят ли email другим пользователем
+        const existingByEmail = await User.findOne({ email });
+        if (existingByEmail && existingByEmail._id.toString() !== user._id.toString()) {
+          return res.status(409).json({ message: 'This email is already in use by another user' });
+        }
+
+        // Связываем Google аккаунт с существующим пользователем
+        user.email = email;
+        user.googleId = googleId;
+        user.isEmailVerified = emailVerified;
+        if (!user.name && name) user.name = name;
+        if (!user.avatarUrl && picture) user.avatarUrl = picture;
+        await user.save();
+      }
+    }
+
+    // ШАГ 2: Если не нашли по deviceId, используем стандартную логику
+    if (!user) {
+      const uniqueData = { email, googleId };
+      if (deviceId) uniqueData.deviceId = deviceId;
+      user = await findOrCreateUserByUnique(uniqueData);
+    }
+
     const userId = user._id?.toString?.() || user.id;
 
     // Дополним профиль данными из Google (безопасное обновление)
@@ -63,7 +95,8 @@ exports.userRegisterGoogle = async (req, res) => {
     if (name && !user.name) patch.name = name;
     if (picture && !user.avatarUrl) patch.avatarUrl = picture;
     if (!user.googleId) patch.googleId = googleId;
-    if (!user.emailVerified && emailVerified) patch.emailVerified = true;
+    if (!user.isEmailVerified && emailVerified) patch.isEmailVerified = true;
+    if (deviceId && !user.deviceId) patch.deviceId = deviceId;
 
     if (Object.keys(patch).length > 0) {
       try {

@@ -78,23 +78,30 @@ bot.on('error', (err) => {
   console.error('Telegram bot error:', err?.message || err);
 });
 
-// Команда /start
-bot.onText(/\/start/, async (msg) => {
+// Команда /start с опциональным deviceId
+// Формат: /start или /start DEVICE_ID
+// Deep link: https://t.me/MoloChatBot?start=DEVICE_ID
+bot.onText(/\/start(?:\s+(.+))?/, async (msg, match) => {
   const chatId = msg.chat.id;
+  const deviceId = match[1] || null; // deviceId из deep link параметра
   const confirmationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  console.log('Telegram bot /start:', { chatId, deviceId, confirmationCode });
 
   try {
     await bot.sendMessage(chatId, 'Добро пожаловать в регистрацию Molo!');
     await bot.sendMessage(chatId, 'Вот Ваш код подтверждения:)');
     await bot.sendMessage(chatId, confirmationCode);
 
-    // ЕДИНЫЙ запрос на ваш бэкенд
-    await api.post('/api/setDataFromTelegram', {
-      chatId,
-      confirmationCode,
-    });
+    // Отправляем на бэкенд с deviceId для связки аккаунтов
+    const payload = { chatId, confirmationCode };
+    if (deviceId) {
+      payload.deviceId = deviceId;
+    }
 
-    console.log('Код успешно отправлен на бэкенд');
+    await api.post('/api/setDataFromTelegram', payload);
+
+    console.log('Код успешно отправлен на бэкенд с deviceId:', deviceId);
   } catch (error) {
     console.error('Ошибка при обработке /start:', error?.message || error);
   }
