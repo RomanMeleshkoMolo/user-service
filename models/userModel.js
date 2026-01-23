@@ -26,9 +26,13 @@ const UserPhotoSchema = new mongoose.Schema(
 );
 
 const userSchema = new mongoose.Schema({
+  // deviceId - уникальный идентификатор устройства для связки аккаунтов
+  // Позволяет связать разные методы регистрации (email, telegram, google) в одну запись
+  deviceId: { type: String, index: true, unique: true, sparse: true },
+
   chatId: { type: String, index: true, unique: true, sparse: true },
-  confirmationCode: { type: String, index: true, unique: true, sparse: true },
-  name: { type: String, index: true, unique: true, sparse: true },
+  confirmationCode: { type: String, index: true },  // не unique - временный код
+  name: { type: String, index: true },  // не unique - имена могут повторяться
   email: { type: String, index: true, unique: true, sparse: true },
 
   // interests — одиночный объект, но опциональный

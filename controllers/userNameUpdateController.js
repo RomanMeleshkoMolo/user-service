@@ -3,32 +3,39 @@ const { findOrCreateUserByUnique, updateUserById} = require('../services/userSer
 
 exports.startOnboarding = async (req, res) => {
   try {
-    const { provider, email, googleId, chatId } = req.body || {};
+    const { provider, email, googleId, chatId, deviceId } = req.body || {};
+
+    console.log('startOnboarding: получены данные', { provider, email, googleId, chatId, deviceId });
 
     if (!provider) {
       return res.status(400).json({ message: 'provider required' });
     }
 
     // формируем unique-поле в зависимости от provider
+    // deviceId добавляем только если он есть
     let unique = null;
 
     if (provider === 'email') {
       const normalizedEmail = (email || '').trim().toLowerCase();
       if (!normalizedEmail) return res.status(400).json({ message: 'identifier required' });
       unique = { email: normalizedEmail };
+      if (deviceId) unique.deviceId = deviceId;
     } else if (provider === 'google') {
       const id = (googleId || '').trim();
       if (!id) return res.status(400).json({ message: 'identifier required' });
       unique = { googleId: id };
+      if (deviceId) unique.deviceId = deviceId;
     } else if (provider === 'telegram') {
       const id = String(chatId ?? '').trim();
       if (!id) return res.status(400).json({ message: 'identifier required' });
       unique = { chatId: id };
+      if (deviceId) unique.deviceId = deviceId;
     } else {
       return res.status(400).json({ message: 'unsupported provider' });
     }
 
     // создать или найти юзера по уникальному идентификатору
+    // deviceId используется для связки аккаунтов с разными методами регистрации
     const user = await findOrCreateUserByUnique(unique);
 
     const userId = user._id?.toString?.() || user.id;
