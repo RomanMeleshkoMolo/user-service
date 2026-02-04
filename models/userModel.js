@@ -62,6 +62,9 @@ const userSchema = new mongoose.Schema({
   userPhoto: { type: [UserPhotoSchema], default: [] },
   userLocation: { type: String, index: true },
   userSex: { type: String, enum: ['heterosexual', 'gay', 'lesbian', 'bisexual', 'asexual'] },
+
+  // Флаг завершения онбординга
+  onboardingComplete: { type: Boolean, default: false },
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
