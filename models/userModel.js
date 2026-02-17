@@ -35,11 +35,16 @@ const userSchema = new mongoose.Schema({
   name: { type: String, index: true },  // не unique - имена могут повторяться
   email: { type: String, index: true, unique: true, sparse: true },
 
-  // interests — одиночный объект, но опциональный
-  interests: {
+  // interests — массив строк (например: ['sport', 'music', 'travel'])
+  interests: { type: [String], default: [] },
+
+  // Новые поля профиля
+  education: { type: String, default: '' },
+  lookingFor: {
     type: new mongoose.Schema(
       {
-        title: { type: String, trim: true },
+        id: { type: String },
+        title: { type: String },
         icon: { type: String, default: '' },
       },
       { _id: false }
@@ -47,6 +52,8 @@ const userSchema = new mongoose.Schema({
     required: false,
     default: undefined,
   },
+  about: { type: String, default: '' },
+  work: { type: String, default: '' },
 
   googleId: { type: String, index: true, unique: true, sparse: true },
   age: { type: Number },
@@ -65,6 +72,10 @@ const userSchema = new mongoose.Schema({
 
   // Флаг завершения онбординга
   onboardingComplete: { type: Boolean, default: false },
+
+  // Онлайн статус
+  isOnline: { type: Boolean, default: false },
+  lastSeen: { type: Date, default: null },
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
