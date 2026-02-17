@@ -69,6 +69,13 @@ const userSchema = new mongoose.Schema({
   userPhoto: { type: [UserPhotoSchema], default: [] },
   userLocation: { type: String, index: true },
   userSex: { type: String, enum: ['heterosexual', 'gay', 'lesbian', 'bisexual', 'asexual'] },
+  zodiac: { type: String, default: '' },
+  languages: { type: [String], default: [] },
+  children: { type: String, default: '' },
+  pets: { type: [String], default: [] },
+  smoking: { type: String, default: '' },
+  alcohol: { type: String, default: '' },
+  relationship: { type: String, default: '' },
 
   // Флаг завершения онбординга
   onboardingComplete: { type: Boolean, default: false },
