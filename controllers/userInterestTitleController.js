@@ -1,7 +1,7 @@
 const User = require('../models/userModel');
 
-// Ожидает в body: { payload: { title: string, icon: string } }
-// Гарантирует, что user.interests содержит ровно один объект { title, icon }
+// Ожидает в body: { payload: { id: string, title: string, icon: string } }
+// Сохраняет выбор онбординга в поле lookingFor
 const saveUserInterest = async (req, res) => {
   try {
     const userId =
@@ -13,10 +13,11 @@ const saveUserInterest = async (req, res) => {
 
     // ВАЖНО: достаём из req.body.payload
     const payload = req.body && req.body.payload ? req.body.payload : {};
-    let { title, icon } = payload;
+    let { id, title, icon } = payload;
 
+    id    = typeof id    === 'string' ? id.trim()    : '';
     title = typeof title === 'string' ? title.trim() : '';
-    icon = typeof icon === 'string' ? icon.trim() : '';
+    icon  = typeof icon  === 'string' ? icon.trim()  : '';
 
     if (!title) {
       return res.status(400).json({ message: 'Interest title is required' });
@@ -25,11 +26,11 @@ const saveUserInterest = async (req, res) => {
       return res.status(400).json({ message: 'Interest icon is required' });
     }
 
-    // Обновляем interests одним запросом
+    // Сохраняем в lookingFor (а не в interests)
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $set: { interests: { title, icon } } },
-      { new: true, runValidators: true } // вернёт обновлённый документ и применит валидации схемы
+      { $set: { lookingFor: { id, title, icon } } },
+      { new: true, runValidators: true }
     );
 
     if (!updatedUser) {
