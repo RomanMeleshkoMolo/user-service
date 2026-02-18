@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, index: true },  // не unique - имена могут повторяться
   email: { type: String, index: true, unique: true, sparse: true },
 
-  // interests — массив строк (например: ['sport', 'music', 'travel'])
+  // interests — массив строк (хобби: 'sport', 'music', 'travel' и т.д.)
   interests: { type: [String], default: [] },
 
   // Новые поля профиля
