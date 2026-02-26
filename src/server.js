@@ -20,6 +20,7 @@ const userRegisterSex = require('../routes/userRegisterSex');
 const userRegisterGoogle = require('../routes/userRegisterGoogle');
 const checkDevice = require('../routes/checkDevice');
 const onlineStatus = require('../routes/onlineStatus');
+const completeOnboarding = require('../routes/completeOnboarding');
 
 // Connect Telegram bot
 const telegram = require('../telegram/telegramBot');
@@ -48,6 +49,7 @@ app.use(userRegisterSex);
 app.use(userRegisterGoogle);
 app.use(checkDevice);
 app.use(onlineStatus);
+app.use(completeOnboarding);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

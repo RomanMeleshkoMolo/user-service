@@ -31,8 +31,7 @@ exports.saveUserSex = async (req, res) => {
       });
     }
 
-    // Устанавливаем userSex и отмечаем онбординг как завершённый
-    const update = { $set: { userSex: normalizedGender, onboardingComplete: true } };
+    const update = { $set: { userSex: normalizedGender } };
 
     const updated = await User.findByIdAndUpdate(
       userId,
