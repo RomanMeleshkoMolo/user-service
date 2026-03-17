@@ -21,6 +21,7 @@ const userRegisterGoogle = require('../routes/userRegisterGoogle');
 const checkDevice = require('../routes/checkDevice');
 const onlineStatus = require('../routes/onlineStatus');
 const completeOnboarding = require('../routes/completeOnboarding');
+const refreshToken = require('../routes/refreshToken');
 
 // Connect Telegram bot
 const telegram = require('../telegram/telegramBot');
@@ -50,6 +51,7 @@ app.use(userRegisterGoogle);
 app.use(checkDevice);
 app.use(onlineStatus);
 app.use(completeOnboarding);
+app.use(refreshToken);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
