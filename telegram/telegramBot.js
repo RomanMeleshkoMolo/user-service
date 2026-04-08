@@ -89,21 +89,25 @@ bot.onText(/\/start(?:\s+(.+))?/, async (msg, match) => {
   console.log('Telegram bot /start:', { chatId, deviceId, confirmationCode });
 
   try {
-    await bot.sendMessage(chatId, 'Добро пожаловать в регистрацию Molo!');
-    await bot.sendMessage(chatId, 'Вот Ваш код подтверждения:)');
-    await bot.sendMessage(chatId, confirmationCode);
-
-    // Отправляем на бэкенд с deviceId для связки аккаунтов
+    // ШАГ 1: Сначала сохраняем код в DB — если упадёт, пользователь не получит нерабочий код
     const payload = { chatId, confirmationCode };
     if (deviceId) {
       payload.deviceId = deviceId;
     }
 
     await api.post('/api/setDataFromTelegram', payload);
+    console.log('Код успешно сохранён в DB с deviceId:', deviceId);
 
-    console.log('Код успешно отправлен на бэкенд с deviceId:', deviceId);
+    // ШАГ 2: Только после успешного сохранения — отправляем код пользователю
+    await bot.sendMessage(chatId, 'Добро пожаловать в регистрацию Molo!');
+    await bot.sendMessage(chatId, 'Вот Ваш код подтверждения:)');
+    await bot.sendMessage(chatId, confirmationCode);
   } catch (error) {
     console.error('Ошибка при обработке /start:', error?.message || error);
+    // Сообщаем пользователю об ошибке в Telegram
+    try {
+      await bot.sendMessage(chatId, 'Произошла ошибка при регистрации. Попробуйте ещё раз — напишите /start');
+    } catch (_) {}
   }
 });
 
