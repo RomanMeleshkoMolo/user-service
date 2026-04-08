@@ -38,10 +38,10 @@ const WORK = [
 ];
 
 const LOOKING_FOR_OPTIONS = [
-  { id: 'relationship', title: 'Отношения',       icon: 'rose-outline'   },
-  { id: 'friendship',   title: 'Дружба',           icon: 'happy-outline'  },
-  { id: 'dating',       title: 'Свидания',         icon: 'wine-outline'   },
-  { id: 'marriage',     title: 'Создание семьи',   icon: 'home-outline'   },
+  { id: 'relationship', title: 'Отношения',       icon: 'IconRosette'        },
+  { id: 'friendship',   title: 'Дружба',           icon: 'IconMoodSmile'      },
+  { id: 'dating',       title: 'Свидания',         icon: 'IconGlassCocktail'  },
+  { id: 'marriage',     title: 'Создание семьи',   icon: 'IconHome'           },
 ];
 
 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];

@@ -94,10 +94,10 @@ const INTERESTS = [
 ];
 
 const LOOKING_FOR = [
-  { id: 'relationship', title: 'Відносини',  icon: 'rose-outline'  },
-  { id: 'friendship',   title: 'Дружба',     icon: 'happy-outline' },
-  { id: 'dating',       title: 'Побачення',  icon: 'wine-outline'  },
-  { id: 'marriage',     title: 'Сім\'я',     icon: 'home-outline'  },
+  { id: 'relationship', title: 'Відносини',  icon: 'IconRosette'       },
+  { id: 'friendship',   title: 'Дружба',     icon: 'IconMoodSmile'     },
+  { id: 'dating',       title: 'Побачення',  icon: 'IconGlassCocktail' },
+  { id: 'marriage',     title: 'Сім\'я',     icon: 'IconHome'          },
 ];
 
 const ABOUT_F = [
