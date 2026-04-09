@@ -25,14 +25,16 @@ const MAKE_PUBLIC = process.env.MAKE_PUBLIC === '1'; // если нужно ст
 
 // Пороги
 const MODERATION_THRESHOLD = Number(process.env.MODERATION_THRESHOLD || 80);
-const FACE_CONFIDENCE_MIN = Number(process.env.FACE_CONFIDENCE_MIN || 70);
-const FACE_MIN_RELATIVE_SIZE = Number(process.env.FACE_MIN_RELATIVE_SIZE || 0.08);
-const MAX_ABS_YAW = Number(process.env.FACE_MAX_ABS_YAW || 25);
-const MAX_ABS_PITCH = Number(process.env.FACE_MAX_ABS_PITCH || 25);
-const MAX_ABS_ROLL = Number(process.env.FACE_MAX_ABS_ROLL || 25);
-const MIN_SHARPNESS = Number(process.env.FACE_MIN_SHARPNESS || 40);
-const MIN_BRIGHTNESS = Number(process.env.FACE_MIN_BRIGHTNESS || 15);
-const MAX_BRIGHTNESS = Number(process.env.FACE_MAX_BRIGHTNESS || 95);
+const FACE_CONFIDENCE_MIN = Number(process.env.FACE_CONFIDENCE_MIN || 60);
+const FACE_MIN_RELATIVE_SIZE = Number(process.env.FACE_MIN_RELATIVE_SIZE || 0.03);
+// Углы: разрешаем профиль, селфи под углом, наклонённые фото
+const MAX_ABS_YAW   = Number(process.env.FACE_MAX_ABS_YAW   || 70);  // был 25 — горизонтальный поворот
+const MAX_ABS_PITCH = Number(process.env.FACE_MAX_ABS_PITCH || 50);  // был 25 — наклон вперёд/назад
+const MAX_ABS_ROLL  = Number(process.env.FACE_MAX_ABS_ROLL  || 50);  // был 25 — вращение
+// Качество: допускаем тёмное освещение и художественные снимки
+const MIN_SHARPNESS  = Number(process.env.FACE_MIN_SHARPNESS  || 10); // был 40
+const MIN_BRIGHTNESS = Number(process.env.FACE_MIN_BRIGHTNESS || 5);  // был 15
+const MAX_BRIGHTNESS = Number(process.env.FACE_MAX_BRIGHTNESS || 99); // был 95
 const FACE_MIN_COUNT = Number(process.env.FACE_MIN_COUNT || 1);
 const FACE_MAX_COUNT = Number(process.env.FACE_MAX_COUNT || 10);
 
