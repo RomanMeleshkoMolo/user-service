@@ -61,15 +61,15 @@ const RU_CITIES = [
 
 const ALL_CITIES = [...UA_CITIES, ...RU_CITIES];
 
-// ──────────────── Данные профиля ────────────────
+// ──────────────── Данные профиля (value-ключи совпадают с фильтром) ────────────────
 
 const ZODIACS = [
-  'Овен','Телець','Близнюки','Рак','Лев','Діва',
-  'Терези','Скорпіон','Стрілець','Козоріг','Водолій','Риби',
+  'aries','taurus','gemini','cancer','leo','virgo',
+  'libra','scorpio','sagittarius','capricorn','aquarius','pisces',
 ];
 
 const EDUCATION = [
-  'Вища','Незакінчена вища','Середня спеціальна','Магістратура','Аспірантура',
+  'school','college','bachelor','master','phd',
 ];
 
 const WORK_F = [
@@ -94,10 +94,12 @@ const INTERESTS = [
 ];
 
 const LOOKING_FOR = [
-  { id: 'relationship', title: 'Відносини',  icon: 'IconRosette'       },
-  { id: 'friendship',   title: 'Дружба',     icon: 'IconMoodSmile'     },
-  { id: 'dating',       title: 'Побачення',  icon: 'IconGlassCocktail' },
-  { id: 'marriage',     title: 'Сім\'я',     icon: 'IconHome'          },
+  { id: 'dates',        title: 'Свидания',        icon: 'IconGlassCocktail' },
+  { id: 'chat',         title: 'Общение',          icon: 'IconUsers'         },
+  { id: 'love',         title: 'Найти любовь',     icon: 'IconHeart'         },
+  { id: 'friendship',   title: 'Дружба',           icon: 'IconMoodSmile'     },
+  { id: 'relationship', title: 'Отношения',        icon: 'IconRosette'       },
+  { id: 'family',       title: 'Создание семьи',   icon: 'IconHome'          },
 ];
 
 const ABOUT_F = [
@@ -181,16 +183,16 @@ function buildUser(globalIndex, gender) {
     work: isFemale ? WORK_F[globalIndex % WORK_F.length] : WORK_M[globalIndex % WORK_M.length],
     education: EDUCATION[globalIndex % EDUCATION.length],
     zodiac: ZODIACS[globalIndex % ZODIACS.length],
-    relationship: isFemale ? 'Вільна' : 'Вільний',
-    children: globalIndex % 5 === 0 ? 'Є' : 'Немає',
-    smoking: globalIndex % 7 === 0 ? 'Іноді' : 'Ні',
-    alcohol: globalIndex % 3 === 0 ? 'Іноді' : 'Ні',
+    relationship: ['single', 'in_relationship', 'complicated', 'divorced'][globalIndex % 4],
+    children: ['no', 'has', 'wants', 'not_sure', 'no'][globalIndex % 5],
+    smoking: globalIndex % 7 === 0 ? 'sometimes' : 'no',
+    alcohol: globalIndex % 3 === 0 ? 'sometimes' : 'no',
     languages: globalIndex % 3 === 0
-      ? ['Українська', 'Англійська', 'Польська']
+      ? ['russian', 'english', 'spanish']
       : globalIndex % 2 === 0
-        ? ['Українська', 'Англійська']
-        : ['Українська'],
-    pets: globalIndex % 4 === 0 ? [globalIndex % 2 === 0 ? 'Кіт' : 'Собака'] : [],
+        ? ['russian', 'english']
+        : ['russian'],
+    pets: globalIndex % 4 === 0 ? [globalIndex % 2 === 0 ? 'cat' : 'dog'] : [],
     interests: randN(INTERESTS, randInt(3, 5)),
     lookingFor: LOOKING_FOR[globalIndex % LOOKING_FOR.length],
     userPhoto,
