@@ -9,23 +9,33 @@ const User = require('../models/userModel');
 // Не требует авторизации — используется когда текущий токен истёк.
 router.post('/auth/refresh', async (req, res) => {
   try {
-    const { deviceId } = req.body;
+    const { deviceId, userId } = req.body;
+    console.log('[refreshToken] incoming:', { deviceId, userId });
 
-    if (!deviceId) {
-      return res.status(400).json({ message: 'deviceId is required' });
+    if (!deviceId && !userId) {
+      return res.status(400).json({ message: 'deviceId or userId is required' });
     }
 
-    const user = await User.findOne({ deviceId }).select('_id onboardingComplete').lean();
+    let user = null;
+
+    if (deviceId) {
+      user = await User.findOne({ deviceId }).select('_id onboardingComplete').lean();
+    }
+
+    // Fallback: ищем по userId из истёкшего JWT
+    if (!user && userId) {
+      user = await User.findById(userId).select('_id onboardingComplete').lean();
+    }
 
     if (!user) {
-      return res.status(404).json({ message: 'Device not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    const userId = String(user._id);
+    const userIdStr = String(user._id);
 
     const regToken = jwt.sign(
       {
-        sub: userId,
+        sub: userIdStr,
         scope: user.onboardingComplete ? 'app' : 'onboarding',
         onboardingComplete: !!user.onboardingComplete,
       },
@@ -33,7 +43,7 @@ router.post('/auth/refresh', async (req, res) => {
       { expiresIn: '30d' }
     );
 
-    console.log(`[refreshToken] Issued new token for user ${userId}`);
+    console.log(`[refreshToken] Issued new token for user ${userIdStr}`);
 
     return res.status(200).json({ regToken });
   } catch (error) {

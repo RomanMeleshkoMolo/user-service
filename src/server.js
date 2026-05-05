@@ -1,4 +1,13 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+
+process.on('uncaughtException', (err) => {
+  console.error('[server] uncaughtException (сервер продолжает работу):', err.message);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[server] unhandledRejection (сервер продолжает работу):', reason);
+});
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
