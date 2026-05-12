@@ -1,6 +1,7 @@
 const {
   RekognitionClient,
   DetectModerationLabelsCommand,
+  DetectFacesCommand,
 } = require('@aws-sdk/client-rekognition');
 const {
   S3Client,
@@ -272,6 +273,26 @@ exports.validateUserPhoto = async (req, res) => {
         labels: blocked.map(l => ({ name: l.Name, confidence: l.Confidence })),
         debug: buildDebug({ rawLabels: labels }),
       });
+    }
+
+    // Проверяем наличие лица — в приложении для знакомств обязательно лицо человека
+    let faceCount = 0;
+    try {
+      const faceResp = await rekognition.send(new DetectFacesCommand({
+        Image,
+        Attributes: ['DEFAULT'],
+      }));
+      faceCount = faceResp?.FaceDetails?.length || 0;
+    } catch (e) {
+      console.warn('[VALIDATE] DetectFaces error (non-critical):', e?.message);
+      faceCount = 1; // при ошибке AWS не блокируем
+    }
+    console.log('[VALIDATE] face count:', faceCount);
+
+    if (faceCount === 0) {
+      const rejectedKey = buildRejectedKey(userId, key, 'append-timestamp');
+      try { await moveObject(S3_BUCKET, key, rejectedKey); } catch (e) { /* non-critical */ }
+      return res.status(422).json({ ok: false, reason: 'Фото должно содержать лицо человека' });
     }
 
     // Фото прошло модерацию. Готовим финальный ключ и конвертацию в WEBP
