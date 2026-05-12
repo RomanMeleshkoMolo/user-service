@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
+const mongoose = require('../src/db');
 
 const counterSchema = new mongoose.Schema({
   name: String,
-  seq: Number
+  seq: Number,
 });
 
-const Counter = mongoose.model('Counter', counterSchema);
+const Counter = mongoose.models.Counter || mongoose.model('Counter', counterSchema);
 
 module.exports = Counter;

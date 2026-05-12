@@ -1,7 +1,6 @@
 const {
   RekognitionClient,
   DetectModerationLabelsCommand,
-  DetectFacesCommand,
 } = require('@aws-sdk/client-rekognition');
 const {
   S3Client,
@@ -9,6 +8,7 @@ const {
   HeadObjectCommand,
   PutObjectCommand,
   DeleteObjectCommand,
+  CopyObjectCommand,
 } = require('@aws-sdk/client-s3');
 const User = require('../models/userModel');
 const sharp = require('sharp');
@@ -25,18 +25,6 @@ const MAKE_PUBLIC = process.env.MAKE_PUBLIC === '1'; // если нужно ст
 
 // Пороги
 const MODERATION_THRESHOLD = Number(process.env.MODERATION_THRESHOLD || 80);
-const FACE_CONFIDENCE_MIN = Number(process.env.FACE_CONFIDENCE_MIN || 60);
-const FACE_MIN_RELATIVE_SIZE = Number(process.env.FACE_MIN_RELATIVE_SIZE || 0.03);
-// Углы: разрешаем профиль, селфи под углом, наклонённые фото
-const MAX_ABS_YAW   = Number(process.env.FACE_MAX_ABS_YAW   || 70);  // был 25 — горизонтальный поворот
-const MAX_ABS_PITCH = Number(process.env.FACE_MAX_ABS_PITCH || 50);  // был 25 — наклон вперёд/назад
-const MAX_ABS_ROLL  = Number(process.env.FACE_MAX_ABS_ROLL  || 50);  // был 25 — вращение
-// Качество: допускаем тёмное освещение и художественные снимки
-const MIN_SHARPNESS  = Number(process.env.FACE_MIN_SHARPNESS  || 10); // был 40
-const MIN_BRIGHTNESS = Number(process.env.FACE_MIN_BRIGHTNESS || 5);  // был 15
-const MAX_BRIGHTNESS = Number(process.env.FACE_MAX_BRIGHTNESS || 99); // был 95
-const FACE_MIN_COUNT = Number(process.env.FACE_MIN_COUNT || 1);
-const FACE_MAX_COUNT = Number(process.env.FACE_MAX_COUNT || 10);
 
 // Максимальные размеры для сохранения (по желанию)
 const MAX_WIDTH = Number(process.env.IMG_MAX_WIDTH || 2000);
@@ -244,12 +232,15 @@ exports.validateUserPhoto = async (req, res) => {
     }
 
     const labels = Array.isArray(modResp?.ModerationLabels) ? modResp.ModerationLabels : [];
+    console.log('[VALIDATE] moderation labels:', JSON.stringify(labels));
+
     const blocked = labels.filter(l => {
       const conf = l.Confidence || 0;
       const name = l.Name || '';
       const parent = l.ParentName || '';
       return conf >= MODERATION_THRESHOLD && (BLOCKED_CATEGORIES.has(name) || BLOCKED_CATEGORIES.has(parent));
     });
+    console.log('[VALIDATE] blocked labels:', JSON.stringify(blocked));
 
     if (blocked.length > 0) {
 
@@ -283,112 +274,7 @@ exports.validateUserPhoto = async (req, res) => {
       });
     }
 
-    // Лица
-    let facesResp;
-    try {
-      facesResp = await rekognition.send(new DetectFacesCommand({
-        Image,
-        Attributes: ['ALL'],
-      }));
-    } catch (e) {
-      console.error('DetectFaces error:', {
-        name: e?.name, message: e?.message, code: e?.Code || e?.code, meta: e?.$metadata
-      });
-      return res.status(500).json({ ok: false, reason: 'Internal server error' });
-    }
-
-    const faces = Array.isArray(facesResp?.FaceDetails) ? facesResp.FaceDetails : [];
-
-    if (faces.length < FACE_MIN_COUNT || faces.length > FACE_MAX_COUNT) {
-
-      const rejectedKey = buildRejectedKey(userId, key, 'append-timestamp');
-      try {
-        await moveObject(S3_BUCKET, key, rejectedKey);
-      } catch (e) {
-        console.error('Failed to move rejected image:', { message: e?.message });
-        // Если перенос не удался — в крайнем случае не удаляем оригинал,
-        // чтобы не потерять файл. Можно записать originalKey отдельно.
-      }
-
-      await User.updateOne(
-        { _id: userId },
-        { $push: { userPhoto: {
-          key: rejectedKey,
-          originalKey: key,
-          bucket: S3_BUCKET,
-          status: 'rejected',
-          reason: 'face_count',
-          faceCount: faces.length,
-          createdAt: new Date()
-        } } }
-      );
-
-      return res.status(422).json({
-        ok: false,
-        reason: `На фото должно быть от ${FACE_MIN_COUNT} до ${FACE_MAX_COUNT} человек`,
-        debug: buildDebug({ count: faces.length }),
-      });
-    }
-
-    // Проверяем, есть ли хотя бы одно "проходящее" лицо
-    const passes = faces.some(face => {
-      const conf = face.Confidence || 0;
-      const pose = face.Pose || {};
-      const quality = face.Quality || {};
-      const box = face.BoundingBox || {};
-
-      const yaw = Math.abs(pose.Yaw ?? 0);
-      const pitch = Math.abs(pose.Pitch ?? 0);
-      const roll = Math.abs(pose.Roll ?? 0);
-
-      const brightness = quality.Brightness ?? 0;
-      const sharpness = quality.Sharpness ?? 0;
-
-      // BoundingBox относительный: Width/Height в [0..1]
-      const relArea = (box.Width || 0) * (box.Height || 0);
-
-      return (
-        conf >= FACE_CONFIDENCE_MIN &&
-        relArea >= FACE_MIN_RELATIVE_SIZE &&
-        yaw <= MAX_ABS_YAW &&
-        pitch <= MAX_ABS_PITCH &&
-        roll <= MAX_ABS_ROLL &&
-        sharpness >= MIN_SHARPNESS &&
-        brightness >= MIN_BRIGHTNESS &&
-        brightness <= MAX_BRIGHTNESS
-      );
-    });
-
-    if (!passes) {
-
-      const rejectedKey = buildRejectedKey(userId, key, 'append-timestamp');
-      try {
-        await moveObject(S3_BUCKET, key, rejectedKey);
-      } catch (e) {
-        console.error('Failed to move rejected image:', { message: e?.message });
-      }
-
-      await User.updateOne(
-        { _id: userId },
-        { $push: { userPhoto: {
-          key: rejectedKey,
-          originalKey: key,
-          bucket: S3_BUCKET,
-          status: 'rejected',
-          reason: 'face_quality',
-          faces,
-          createdAt: new Date()
-        } } }
-      );
-
-      return res.status(422).json({
-        ok: false,
-        reason: 'Качество лица недостаточно (ракурс/резкость/яркость/размер)',
-        debug: buildDebug({ faces }),
-      });
-    }
-
-    // Фото проходит. Готовим финальный ключ и конвертацию в WEBP
+    // Фото прошло модерацию. Готовим финальный ключ и конвертацию в WEBP
     // const approvedKey = approvedKeyFromTmp(key);
     const approvedKey = buildApprovedKey(userId, key, 'append-timestamp'); // или 'keep-name' / 'fixed-current'
 
@@ -453,7 +339,7 @@ exports.validateUserPhoto = async (req, res) => {
     return res.json({
       ok: true,
       photo: photoDoc,
-      debug: buildDebug({ facesCount: faces.length, modLabels: labels })
+      debug: buildDebug({ modLabels: labels })
     });
   } catch (e) {
     console.error('validateUserPhoto fatal:', e);
