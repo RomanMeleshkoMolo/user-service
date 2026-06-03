@@ -10,8 +10,8 @@ function normalizeInput(s) {
     .trim();
 }
 
-// Разрешаем буквы (латиница/кириллица и распространённые акцентированные символы), пробелы, дефис, апостроф и точку
-const LOCATION_REGEX = /^[A-Za-zА-Яа-яЁёІіЇїЄєĞğÜüŞşÇçÖöÀ-ÖØ-öø-ÿ'’.\-\s]+$/;
+// Accept any Unicode letter, whitespace, comma, period, hyphen, apostrophe
+const LOCATION_REGEX = /^[\p{L}\s,.\-’’’`]+$/u;
 
 // Приведение к единому виду (Title Case) с учётом дефисов и апострофов:
 // "киев" -> "Киев"
@@ -41,7 +41,7 @@ function toTitleCase(str, locale = 'ru') {
 // Полная валидация + нормализация и приведение к Title Case
 function validateAndCanonicalizeLocation(raw) {
   const value = normalizeInput(raw);
-  if (value.length < 2 || value.length > 50) {
+  if (value.length < 2 || value.length > 100) {
     return { valid: false, value, reason: 'length' };
   }
   if (!LOCATION_REGEX.test(value)) {
@@ -50,7 +50,7 @@ function validateAndCanonicalizeLocation(raw) {
   // Приводим к каноническому виду
   const canonical = toTitleCase(value, 'ru');
   // После приведения снова проверим длину/символы (на всякий)
-  if (canonical.length < 2 || canonical.length > 50 || !LOCATION_REGEX.test(canonical)) {
+  if (canonical.length < 2 || canonical.length > 100 || !LOCATION_REGEX.test(canonical)) {
     return { valid: false, value: canonical, reason: 'canonical_invalid' };
   }
   return { valid: true, value: canonical };
@@ -78,7 +78,7 @@ exports.saveUserLocation = async (req, res) => {
     const { valid, value, reason } = validateAndCanonicalizeLocation(location);
     if (!valid) {
       let message = 'Некорректное местоположение';
-      if (reason === 'length') message = 'Длина местоположения должна быть от 2 до 50 символов';
+      if (reason === 'length') message = 'Длина местоположения должна быть от 2 до 100 символов';
       else if (reason === 'chars') message = 'Местоположение содержит недопустимые символы';
       return res.status(400).json({ message });
     }

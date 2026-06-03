@@ -17,19 +17,14 @@ const saveUserInterest = async (req, res) => {
 
     id    = typeof id    === 'string' ? id.trim()    : '';
     title = typeof title === 'string' ? title.trim() : '';
-    icon  = typeof icon  === 'string' ? icon.trim()  : '';
 
     if (!title) {
       return res.status(400).json({ message: 'Interest title is required' });
     }
-    if (!icon) {
-      return res.status(400).json({ message: 'Interest icon is required' });
-    }
 
-    // Сохраняем в lookingFor (а не в interests)
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $set: { lookingFor: { id, title, icon } } },
+      { $set: { lookingFor: { id, title } } },
       { new: true, runValidators: true }
     );
 

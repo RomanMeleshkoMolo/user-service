@@ -8,7 +8,6 @@ const User = require('../models/userModel');
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/users';
 
-// Фото реальных людей — randomuser.me (стабильные, без expiry)
 const wp = (n) => ({ url: `https://randomuser.me/api/portraits/women/${n}.jpg`, key: null, status: 'approved', format: 'jpg' });
 const mp = (n) => ({ url: `https://randomuser.me/api/portraits/men/${n}.jpg`,   key: null, status: 'approved', format: 'jpg' });
 
@@ -16,11 +15,6 @@ const INTERESTS = [
   'Путешествия', 'Кино', 'Музыка', 'Спорт', 'Готовка', 'Чтение',
   'Фотография', 'Танцы', 'Йога', 'Искусство', 'Игры', 'Природа',
   'Фитнес', 'Кофе', 'Животные', 'Театр', 'Велосипед', 'Плавание',
-];
-
-const LOCATIONS = [
-  'Москва', 'Санкт-Петербург', 'Казань', 'Новосибирск', 'Екатеринбург',
-  'Нижний Новгород', 'Краснодар', 'Ростов-на-Дону', 'Самара', 'Уфа',
 ];
 
 const ZODIACS = [
@@ -56,7 +50,7 @@ const testUsers = [
     gender: { id: 'female', title: 'Женский' },
     wishUser: 'male',
     userSex: 'heterosexual',
-    userLocation: 'Москва',
+    userLocation: 'Київ, Київська область, Україна',
     about: 'Люблю путешествовать и открывать новые места. Обожаю кофе и хорошие книги 📚',
     work: 'Дизайнер',
     education: 'Высшее',
@@ -77,7 +71,7 @@ const testUsers = [
     gender: { id: 'female', title: 'Женский' },
     wishUser: 'male',
     userSex: 'heterosexual',
-    userLocation: 'Санкт-Петербург',
+    userLocation: 'Харків, Харківська область, Україна',
     about: 'Врач по профессии, путешественник по призванию 🌍 Ищу того, кто не боится приключений',
     work: 'Врач',
     education: 'Высшее',
@@ -98,7 +92,7 @@ const testUsers = [
     gender: { id: 'female', title: 'Женский' },
     wishUser: 'male',
     userSex: 'heterosexual',
-    userLocation: 'Казань',
+    userLocation: 'Одеса, Одеська область, Україна',
     about: 'Студентка последнего курса. Танцую, рисую, мечтаю 🎨',
     work: 'Студент',
     education: 'Неоконченное высшее',
@@ -119,7 +113,7 @@ const testUsers = [
     gender: { id: 'female', title: 'Женский' },
     wishUser: 'male',
     userSex: 'heterosexual',
-    userLocation: 'Екатеринбург',
+    userLocation: 'Дніпро, Дніпропетровська область, Україна',
     about: 'Маркетолог. Обожаю кофе, горы и хорошие разговоры ☕🏔️',
     work: 'Маркетолог',
     education: 'Высшее',
@@ -140,7 +134,7 @@ const testUsers = [
     gender: { id: 'female', title: 'Женский' },
     wishUser: 'male',
     userSex: 'heterosexual',
-    userLocation: 'Москва',
+    userLocation: 'Варшава, Мазовецьке воєводство, Польща',
     about: 'Предприниматель. Люблю театр, вино и интересных людей 🍷',
     work: 'Предприниматель',
     education: 'Высшее',
@@ -161,7 +155,7 @@ const testUsers = [
     gender: { id: 'female', title: 'Женский' },
     wishUser: 'all',
     userSex: 'bisexual',
-    userLocation: 'Санкт-Петербург',
+    userLocation: 'Львів, Львівська область, Україна',
     about: 'Фотограф и путешественник. Снимаю людей и природу 📸',
     work: 'Фотограф',
     education: 'Среднее специальное',
@@ -182,7 +176,7 @@ const testUsers = [
     gender: { id: 'female', title: 'Женский' },
     wishUser: 'male',
     userSex: 'heterosexual',
-    userLocation: 'Краснодар',
+    userLocation: 'Запоріжжя, Запорізька область, Україна',
     about: 'Люблю море, солнце и позитивных людей ☀️🌊',
     work: 'Менеджер',
     education: 'Высшее',
@@ -203,7 +197,7 @@ const testUsers = [
     gender: { id: 'female', title: 'Женский' },
     wishUser: 'male',
     userSex: 'heterosexual',
-    userLocation: 'Новосибирск',
+    userLocation: 'Берлін, Берлін, Німеччина',
     about: 'Программистка. Днём пишу код, вечером читаю книги 💻📖',
     work: 'Программист',
     education: 'Высшее',
@@ -224,7 +218,7 @@ const testUsers = [
     gender: { id: 'female', title: 'Женский' },
     wishUser: 'male',
     userSex: 'heterosexual',
-    userLocation: 'Москва',
+    userLocation: 'Прага, Прага, Чехія',
     about: 'Архитектор. Вижу красоту в деталях и людях 🏛️',
     work: 'Архитектор',
     education: 'Магистратура',
@@ -245,7 +239,7 @@ const testUsers = [
     gender: { id: 'female', title: 'Женский' },
     wishUser: 'male',
     userSex: 'heterosexual',
-    userLocation: 'Ростов-на-Дону',
+    userLocation: 'Відень, Відень, Австрія',
     about: 'Студентка медицины. Йога, правильное питание и мечты о путешествиях 🧘‍♀️',
     work: 'Студент',
     education: 'Неоконченное высшее',
@@ -268,7 +262,7 @@ const testUsers = [
     gender: { id: 'male', title: 'Мужской' },
     wishUser: 'female',
     userSex: 'heterosexual',
-    userLocation: 'Москва',
+    userLocation: 'Київ, Київська область, Україна',
     about: 'IT-предприниматель. Люблю горы, сноуборд и хорошее кино 🏔️🎬',
     work: 'Предприниматель',
     education: 'Высшее',
@@ -289,7 +283,7 @@ const testUsers = [
     gender: { id: 'male', title: 'Мужской' },
     wishUser: 'female',
     userSex: 'heterosexual',
-    userLocation: 'Санкт-Петербург',
+    userLocation: 'Харків, Харківська область, Україна',
     about: 'Журналист и писатель. Интересуюсь историей, философией и хорошей едой 📝',
     work: 'Журналист',
     education: 'Высшее',
@@ -310,7 +304,7 @@ const testUsers = [
     gender: { id: 'male', title: 'Мужской' },
     wishUser: 'female',
     userSex: 'heterosexual',
-    userLocation: 'Екатеринбург',
+    userLocation: 'Дніпро, Дніпропетровська область, Україна',
     about: 'Инженер. В свободное время занимаюсь велоспортом и фотографией 🚴',
     work: 'Программист',
     education: 'Высшее',
@@ -331,7 +325,7 @@ const testUsers = [
     gender: { id: 'male', title: 'Мужской' },
     wishUser: 'female',
     userSex: 'heterosexual',
-    userLocation: 'Казань',
+    userLocation: 'Одеса, Одеська область, Україна',
     about: 'Врач-хирург. Серьёзный на работе, весёлый в жизни 😄',
     work: 'Врач',
     education: 'Высшее',
@@ -352,7 +346,7 @@ const testUsers = [
     gender: { id: 'male', title: 'Мужской' },
     wishUser: 'all',
     userSex: 'bisexual',
-    userLocation: 'Москва',
+    userLocation: 'Варшава, Мазовецьке воєводство, Польща',
     about: 'Музыкант и диджей. Живу ночной жизнью и создаю музыку 🎵',
     work: 'Музыкант',
     education: 'Среднее специальное',
@@ -373,7 +367,7 @@ const testUsers = [
     gender: { id: 'male', title: 'Мужской' },
     wishUser: 'female',
     userSex: 'heterosexual',
-    userLocation: 'Новосибирск',
+    userLocation: 'Львів, Львівська область, Україна',
     about: 'Занимаюсь бизнесом в сфере недвижимости. Люблю спорт и путешествия ✈️',
     work: 'Предприниматель',
     education: 'Высшее',
@@ -394,7 +388,7 @@ const testUsers = [
     gender: { id: 'male', title: 'Мужской' },
     wishUser: 'female',
     userSex: 'heterosexual',
-    userLocation: 'Краснодар',
+    userLocation: 'Запоріжжя, Запорізька область, Україна',
     about: 'Шеф-повар. Готовлю с душой, ем с удовольствием 🍳',
     work: 'Повар',
     education: 'Среднее специальное',
@@ -415,10 +409,10 @@ const testUsers = [
     gender: { id: 'male', title: 'Мужской' },
     wishUser: 'female',
     userSex: 'heterosexual',
-    userLocation: 'Самара',
+    userLocation: 'Прага, Прага, Чехія',
     about: 'Архитектор. Создаю пространства для жизни и мечтаю об идеальном городе 🏙️',
     work: 'Архитектор',
-    education: 'Магистратура',
+    education: 'Магістратура',
     zodiac: 'Козерог',
     relationship: 'Свободен',
     children: 'Нет',
@@ -436,7 +430,7 @@ const testUsers = [
     gender: { id: 'male', title: 'Мужской' },
     wishUser: 'female',
     userSex: 'heterosexual',
-    userLocation: 'Уфа',
+    userLocation: 'Берлін, Берлін, Німеччина',
     about: 'Спортсмен и тренер. ЗОЖ — это образ жизни, а не диета 💪',
     work: 'Тренер',
     education: 'Высшее',
@@ -457,7 +451,7 @@ const testUsers = [
     gender: { id: 'male', title: 'Мужской' },
     wishUser: 'female',
     userSex: 'heterosexual',
-    userLocation: 'Нижний Новгород',
+    userLocation: 'Відень, Відень, Австрія',
     about: 'Маркетолог в стартапе. Люблю горы, книги и хороший юмор 📚',
     work: 'Маркетолог',
     education: 'Высшее',
@@ -479,7 +473,6 @@ async function seed() {
     await mongoose.connect(MONGO_URI);
     console.log('✅ Connected to MongoDB:', MONGO_URI);
 
-    // Удаляем старых тестовых юзеров (без email и deviceId — признак тестового)
     const names = testUsers.map((u) => u.name);
     const deleted = await User.deleteMany({
       name: { $in: names },
@@ -491,7 +484,6 @@ async function seed() {
     let created = 0;
 
     for (const userData of testUsers) {
-      // insertOne напрямую — обходим Mongoose валидацию (key/bucket required)
       await User.collection.insertOne({
         ...userData,
         onboardingComplete: true,
