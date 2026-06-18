@@ -24,6 +24,7 @@ const LIKES_URI    = process.env.LIKES_MONGO_URI || 'mongodb://localhost:27017/m
 const CHAT_URI     = process.env.CHAT_MONGO_URI  || 'mongodb://localhost:27017/molo_chat';
 const TARGET_EMAIL = process.env.TARGET_EMAIL    || 'roman.meleshko1@gmail.com';
 const CHAT_COUNT   = parseInt(process.env.CHAT_COUNT || '50', 10);
+const LIKES_COUNT  = parseInt(process.env.LIKES_COUNT || '100', 10);
 const CLEAN        = process.env.CLEAN === 'true';
 
 // ─── Имена ───────────────────────────────────────────────────────────────────
@@ -74,15 +75,18 @@ const CITIES = [
   'Житомир, Житомирская область, Украина',
   'Винница, Винницкая область, Украина',
   'Хмельницкий, Хмельницкая область, Украина',
-  'Варшава, Мазовецкое воеводство, Польша',
-  'Краков, Малопольское воеводство, Польша',
-  'Берлин, Берлин, Германия',
-  'Мюнхен, Бавария, Германия',
-  'Прага, Прага, Чехия',
-  'Вена, Вена, Австрия',
-  'Лондон, Англия, Великобритания',
-  'Барселона, Каталония, Испания',
-  'Амстердам, Северная Голландия, Нидерланды',
+  'Херсон, Херсонская область, Украина',
+  'Кривой Рог, Днепропетровская область, Украина',
+  'Кременчуг, Полтавская область, Украина',
+  'Белая Церковь, Киевская область, Украина',
+  'Черновцы, Черновицкая область, Украина',
+  'Чернигов, Черниговская область, Украина',
+  'Ровно, Ровненская область, Украина',
+  'Ивано-Франковск, Ивано-Франковская область, Украина',
+  'Тернополь, Тернопольская область, Украина',
+  'Луцк, Волынская область, Украина',
+  'Ужгород, Закарпатская область, Украина',
+  'Мариуполь, Донецкая область, Украина',
 ];
 
 // ─── Профильные данные (все VALUE-ключи из profileOptions.js) ────────────────
@@ -185,13 +189,13 @@ const WORK_M = [
 ];
 
 // ─── Фото-хелперы ─────────────────────────────────────────────────────────────
-const wp = (n, tag) => ({
+const wp = (n) => ({
   url: `https://randomuser.me/api/portraits/women/${n % 100}.jpg`,
-  key: `seed/w${n}_${tag}`, bucket: 'molo-user-photos', status: 'approved', format: 'jpg',
+  key: null, status: 'approved', format: 'jpg',
 });
-const mp = (n, tag) => ({
+const mp = (n) => ({
   url: `https://randomuser.me/api/portraits/men/${n % 100}.jpg`,
-  key: `seed/m${n}_${tag}`, bucket: 'molo-user-photos', status: 'approved', format: 'jpg',
+  key: null, status: 'approved', format: 'jpg',
 });
 
 // ─── Утилиты ──────────────────────────────────────────────────────────────────
@@ -218,11 +222,16 @@ function buildUser(index, gender) {
   const photoFn   = isFemale ? wp : mp;
   const mainIdx   = (index % 100);
   const userPhoto = [
-    photoFn(mainIdx, 'a'),
-    photoFn((mainIdx + 10) % 100, 'b'),
-    photoFn((mainIdx + 20) % 100, 'c'),
-    photoFn((mainIdx + 30) % 100, 'd'),
-    photoFn((mainIdx + 40) % 100, 'e'),
+    photoFn(mainIdx),
+    photoFn((mainIdx + 10) % 100),
+    photoFn((mainIdx + 20) % 100),
+    photoFn((mainIdx + 30) % 100),
+    photoFn((mainIdx + 40) % 100),
+    photoFn((mainIdx + 50) % 100),
+    photoFn((mainIdx + 60) % 100),
+    photoFn((mainIdx + 70) % 100),
+    photoFn((mainIdx + 80) % 100),
+    photoFn((mainIdx + 90) % 100),
   ];
 
   const age         = rand(19, 40);
@@ -261,7 +270,7 @@ function buildUser(index, gender) {
     lookingFor,
     userPhoto,
     onboardingComplete: true,
-    isOnline: index % 3 === 0,
+    isOnline: Math.random() < 0.25,
     lastSeen: new Date(Date.now() - rand(0, 72) * 3600000),
     _isSeed: true,
     createdAt: new Date(Date.now() - rand(1, 60) * 86400000),
@@ -474,11 +483,12 @@ async function seedLikes(likesConn, authConn, personaIds) {
   const existing = await LikeModel.find({ toUser: roman._id }).select('fromUser').lean();
   const existingSet = new Set(existing.map(l => String(l.fromUser)));
 
+  const likePersonas = personaIds.slice(0, LIKES_COUNT);
   const now = new Date();
   let created = 0, skipped = 0;
 
-  for (let i = 0; i < personaIds.length; i += 50) {
-    const batch = personaIds.slice(i, i + 50);
+  for (let i = 0; i < likePersonas.length; i += 50) {
+    const batch = likePersonas.slice(i, i + 50);
     const docs = [];
     for (const p of batch) {
       if (existingSet.has(String(p._id))) { skipped++; continue; }
@@ -599,6 +609,7 @@ async function main() {
   console.log('  molo_chat  →', CHAT_URI);
   console.log('  target     →', TARGET_EMAIL);
   console.log('  CLEAN      →', CLEAN);
+  console.log('  LIKES_COUNT→', LIKES_COUNT);
   console.log('  CHAT_COUNT →', CHAT_COUNT, '\n');
 
   const authConn  = await mongoose.createConnection(AUTH_URI).asPromise();
@@ -618,8 +629,8 @@ async function main() {
   }
 
   console.log('\n🎉 Готово!');
-  console.log('   500 пользователей в Feed/Meets');
-  console.log('   500 симпатий в разделе Симпатии');
+  console.log('   500 пользователей в Feed/Meets (400 в ленте + 100 в симпатиях)');
+  console.log(`   ${LIKES_COUNT} симпатий в разделе Симпатии`);
   console.log(`   ${CHAT_COUNT} чатов с реальными сообщениями`);
   console.log('\n   Удалить всё:  CLEAN=true node scripts/seedMasterTest.js\n');
 
