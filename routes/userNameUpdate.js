@@ -1,12 +1,11 @@
 const router = require('express').Router();
 const { startOnboarding, updateName } = require('../controllers/userNameUpdateController');
 const { authOnboardingOptional, authOnboardingRequired } = require('../middlewares/authOnboarding');
+const { validate, schemas } = require('../middlewares/validate');
 
-// Новый пользователь без токена может сюда зайти
-router.post('/onboarding/start', authOnboardingOptional, startOnboarding);
+router.post('/onboarding/start', authOnboardingOptional, validate(schemas.startOnboarding), startOnboarding);
 
-// На следующих шагах токен обязателен
-router.post('/onboarding/name', authOnboardingRequired, updateName);
+router.post('/onboarding/name', authOnboardingRequired, validate(schemas.updateName), updateName);
 // router.put('/onboarding/interests', authOnboardingRequired, updateInterests);
 // router.post('/onboarding/complete', authOnboardingRequired, completeOnboarding);
 
