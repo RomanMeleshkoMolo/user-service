@@ -43,7 +43,7 @@ exports.startOnboarding = async (req, res) => {
     const regToken = jwt.sign(
       { sub: String(userId), scope: 'onboarding', onboardingComplete: false, provider },
       process.env.JWT_SECRET,
-      { expiresIn: '3d' } // можешь поменять на '30m' если нужно как в примере
+      { expiresIn: '1h' }
     );
 
     const u = user.toObject ? user.toObject() : user;
