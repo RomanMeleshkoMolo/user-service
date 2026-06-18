@@ -40,7 +40,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.set('trust proxy', 1);
-app.use(helmet());
+app.use(helmet({
+  frameguard: false,
+  xContentTypeOptions: false,
+  referrerPolicy: false,
+}));
 app.use(cors({
   origin: (origin, cb) => {
     // React Native не отправляет Origin — пропускаем; веб-клиенты будут проверяться

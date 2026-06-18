@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const User = require('../models/userModel');
+const { validate, schemas } = require('../middlewares/validate');
 
 const refreshLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -14,7 +15,7 @@ const refreshLimiter = rateLimit({
 
 // POST /auth/refresh
 // Требует deviceId + expired JWT (для подтверждения владения токеном)
-router.post('/auth/refresh', refreshLimiter, async (req, res) => {
+router.post('/auth/refresh', refreshLimiter, validate(schemas.refresh), async (req, res) => {
   try {
     const { deviceId } = req.body;
 
