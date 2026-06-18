@@ -1,34 +1,52 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const User = require('../models/userModel');
 
+const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many refresh attempts, please try again later.' },
+});
+
 // POST /auth/refresh
-// Body: { deviceId }
-// Находит пользователя по deviceId и выдаёт новый JWT.
-// Не требует авторизации — используется когда текущий токен истёк.
-router.post('/auth/refresh', async (req, res) => {
+// Требует deviceId + expired JWT (для подтверждения владения токеном)
+router.post('/auth/refresh', refreshLimiter, async (req, res) => {
   try {
-    const { deviceId, userId } = req.body;
-    console.log('[refreshToken] incoming:', { deviceId, userId });
+    const { deviceId } = req.body;
 
-    if (!deviceId && !userId) {
-      return res.status(400).json({ message: 'deviceId or userId is required' });
+    if (!deviceId) {
+      return res.status(400).json({ message: 'deviceId is required' });
     }
 
-    let user = null;
+    // Извлекаем userId из старого токена (даже expired)
+    const authHeader = req.headers.authorization || '';
+    const oldToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
-    if (deviceId) {
-      user = await User.findOne({ deviceId }).select('_id onboardingComplete').lean();
+    let tokenUserId = null;
+    if (oldToken) {
+      try {
+        const payload = jwt.verify(oldToken, process.env.JWT_SECRET, { ignoreExpiration: true });
+        tokenUserId = payload.sub || payload.userId || payload.id;
+      } catch (_) {
+        // Невалидная подпись — отклоняем
+        return res.status(401).json({ message: 'Invalid token signature' });
+      }
     }
 
-    // Fallback: ищем по userId из истёкшего JWT
-    if (!user && userId) {
-      user = await User.findById(userId).select('_id onboardingComplete').lean();
-    }
+    // Ищем пользователя по deviceId
+    const user = await User.findOne({ deviceId }).select('_id onboardingComplete').lean();
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Если передан токен — проверяем что userId совпадает с deviceId owner
+    if (tokenUserId && String(user._id) !== String(tokenUserId)) {
+      return res.status(403).json({ message: 'Token does not match device owner' });
     }
 
     const userIdStr = String(user._id);
@@ -40,10 +58,8 @@ router.post('/auth/refresh', async (req, res) => {
         onboardingComplete: !!user.onboardingComplete,
       },
       process.env.JWT_SECRET,
-      { expiresIn: '30d' }
+      { expiresIn: '7d' }
     );
-
-    console.log(`[refreshToken] Issued new token for user ${userIdStr}`);
 
     return res.status(200).json({ regToken });
   } catch (error) {

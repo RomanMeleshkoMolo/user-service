@@ -112,7 +112,7 @@ exports.userRegisterGoogle = async (req, res) => {
     const regToken = jwt.sign(
       { sub: userId, scope: 'onboarding', onboardingComplete },
       jwtSecret,
-      { expiresIn: '3d' }
+      { expiresIn: '1h' }
     );
 
     // Нормализуем пользователя для ответа
