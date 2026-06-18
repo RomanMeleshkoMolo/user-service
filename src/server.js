@@ -13,6 +13,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const helmet = require('helmet');
 const { sanitize } = require('express-mongo-sanitize');
+const rateLimit = require('express-rate-limit');
 
 // Connect routes
 const userRegisterEmail = require('../routes/userRegisterEmail');
@@ -62,6 +63,14 @@ app.use((req, res, next) => {
   if (req.query) sanitize(req.query);
   next();
 });
+
+app.use(rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many requests, please slow down' },
+}));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
