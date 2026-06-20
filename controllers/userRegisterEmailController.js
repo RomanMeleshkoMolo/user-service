@@ -119,6 +119,8 @@ if (req.user?.id) {
    email: normalizedEmail,
    isEmailVerified: false,
    confirmationCode,
+   premium: false,
+   premiumUntil: null,
  };
  if (deviceId) newUserData.deviceId = deviceId;
 
