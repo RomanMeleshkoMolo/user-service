@@ -69,6 +69,8 @@ async function findOrCreateUserByUnique(unique = {}, extraOnInsert = {}) {
   // Данные для создания нового пользователя
   const insertData = {
     onboardingComplete: false,
+    premium: false,
+    premiumUntil: null,
     ...query,
     ...rest,
     ...extraOnInsert,
